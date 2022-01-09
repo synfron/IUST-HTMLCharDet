@@ -1,7 +1,4 @@
-/target/
-/.gitignore
-/.idea/
-/eval/eval.iml
-/eval/target/
-/eval/test-data/encoding-wise/corpus/
-!/eval/test-data/encoding-wise/corpus/corpus.zip
+.gradle/
+.idea/
+build/
+target/

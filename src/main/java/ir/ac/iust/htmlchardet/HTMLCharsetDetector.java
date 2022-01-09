@@ -30,30 +30,23 @@ public class HTMLCharsetDetector {
 
     private static final int threshold = 40;
 
-    /**
-     * Detects charset encoding of the given html input stream
-     *
-     * @param htmlStream
-     * @param lookInMeta
-     * @return detected charset
-     */
-    public String detect(InputStream htmlStream, boolean... lookInMeta) throws IOException {
+    public String detect(byte[] htmlBytes, boolean... lookInMeta) throws IOException {
         Document domTree = null;
         if (lookInMeta.length > 0 && lookInMeta[0]) {
-            domTree = createDomTree(toByteArray(htmlStream), Charsets.ISO_8859_1.toString());
+            domTree = createDomTree(htmlBytes, Charsets.ISO_8859_1.toString());
             String charset = lookInMetaTags(domTree);
             if (Charsets.isValid(charset)) {
                 return Charsets.normalize(charset);
             }
         }
-
+        ByteArrayInputStream htmlStream = new ByteArrayInputStream(htmlBytes);
         boolean isUTF8 = Utf8.isValidUpToTruncation(htmlStream);
-        if (isUTF8 == true) {
+        if (isUTF8) {
             return Charsets.UTF_8.toString();
         }
 
         if (domTree == null) {
-            domTree = createDomTree(toByteArray(htmlStream), Charsets.ISO_8859_1.toString());
+            domTree = createDomTree(htmlBytes, Charsets.ISO_8859_1.toString());
         }
         String visibleText = domTree.text();
         InputStream visibleTextStream;
@@ -66,6 +59,17 @@ public class HTMLCharsetDetector {
         CharsetDetector charsetDetector = new CharsetDetector();
         charsetDetector.setText(visibleTextStream);
         return Charsets.normalize(charsetDetector.detect().getName());
+    }
+
+    /**
+     * Detects charset encoding of the given html input stream
+     *
+     * @param htmlStream
+     * @param lookInMeta
+     * @return detected charset
+     */
+    public String detect(InputStream htmlStream, boolean... lookInMeta) throws IOException {
+        return detect(toByteArray(htmlStream), lookInMeta);
     }
 
     /**
